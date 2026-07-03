@@ -13,12 +13,12 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f6fa;
+            background: #f5f7fa;
             min-height: 100vh;
         }
 
         .navbar {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 15px 30px;
             display: flex;
@@ -28,22 +28,19 @@
         }
 
         .navbar h1 {
-            font-size: 22px;
+            font-size: 20px;
         }
 
-        .navbar-links a {
+        .navbar a {
             color: white;
             text-decoration: none;
-            margin-left: 20px;
-            opacity: 0.9;
-        }
-
-        .navbar-links a:hover {
-            opacity: 1;
+            padding: 8px 15px;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.2);
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 30px;
         }
@@ -57,27 +54,22 @@
 
         .stat-card {
             background: white;
-            padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            padding: 25px;
             text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         }
 
         .stat-number {
             font-size: 36px;
             font-weight: bold;
-            margin-bottom: 5px;
+            color: #667eea;
         }
 
         .stat-label {
             color: #666;
-            font-size: 14px;
+            margin-top: 5px;
         }
-
-        .stat-pending .stat-number { color: #f39c12; }
-        .stat-approved .stat-number { color: #27ae60; }
-        .stat-rejected .stat-number { color: #e74c3c; }
-        .stat-members .stat-number { color: #3498db; }
 
         .tabs {
             display: flex;
@@ -85,18 +77,18 @@
             margin-bottom: 20px;
         }
 
-        .tab {
+        .tab-btn {
             padding: 12px 25px;
-            background: white;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
+            background: white;
+            color: #666;
             transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
-        .tab.active {
+        .tab-btn.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
@@ -106,16 +98,12 @@
             border-radius: 15px;
             padding: 25px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            display: none;
-        }
-
-        .panel.active {
-            display: block;
+            margin-bottom: 30px;
         }
 
         .panel h2 {
             margin-bottom: 20px;
-            color: #2c3e50;
+            color: #333;
         }
 
         table {
@@ -131,8 +119,8 @@
 
         th {
             background: #f8f9fa;
+            color: #333;
             font-weight: 600;
-            color: #555;
         }
 
         tr:hover {
@@ -140,51 +128,57 @@
         }
 
         .btn {
-            padding: 8px 16px;
+            padding: 8px 15px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 600;
             transition: all 0.3s;
         }
 
         .btn-success {
-            background: #27ae60;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
-        }
-
-        .btn-success:hover {
-            background: #219a52;
         }
 
         .btn-danger {
-            background: #e74c3c;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c0392b;
         }
 
         .btn-primary {
-            background: #3498db;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
 
-        .btn-primary:hover {
-            background: #2980b9;
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
         .badge {
+            display: inline-block;
             padding: 5px 12px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
         }
 
-        .badge-pending { background: #fff3cd; color: #856404; }
-        .badge-approved { background: #d4edda; color: #155724; }
-        .badge-rejected { background: #f8d7da; color: #721c24; }
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
 
         .form-group {
             margin-bottom: 20px;
@@ -193,8 +187,8 @@
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            font-weight: 600;
             color: #333;
+            font-weight: 600;
         }
 
         .form-group input,
@@ -208,308 +202,277 @@
 
         .form-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
 
-        .modal {
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
             display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
         }
 
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 400px;
-            width: 90%;
-        }
-
-        .modal-content h3 {
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
             margin-bottom: 20px;
         }
 
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
         }
 
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            padding: 15px 25px;
-            background: #2c3e50;
-            color: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s;
-        }
-
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .toast.success { background: #27ae60; }
-        .toast.error { background: #e74c3c; }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 0;
-        }
-
-        .checkbox-wrapper input {
-            width: auto;
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
         }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <h1>🛡️ 白名单管理后台</h1>
-        <div class="navbar-links">
-            <a href="/">返回前台</a>
-            <a href="#" onclick="loadStats()">刷新数据</a>
-        </div>
+        <h1>🔧 白名单管理后台</h1>
+        <a href="/">← 返回前台</a>
     </div>
 
     <div class="container">
+        <!-- 统计卡片 -->
         <div class="stats-grid">
-            <div class="stat-card stat-pending">
+            <div class="stat-card">
+                <div class="stat-number" id="statTotal">0</div>
+                <div class="stat-label">总申请数</div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-number" id="statPending">0</div>
                 <div class="stat-label">待审核</div>
             </div>
-            <div class="stat-card stat-approved">
+            <div class="stat-card">
                 <div class="stat-number" id="statApproved">0</div>
                 <div class="stat-label">已通过</div>
             </div>
-            <div class="stat-card stat-rejected">
-                <div class="stat-number" id="statRejected">0</div>
-                <div class="stat-label">已拒绝</div>
-            </div>
-            <div class="stat-card stat-members">
+            <div class="stat-card">
                 <div class="stat-number" id="statMembers">0</div>
                 <div class="stat-label">白名单成员</div>
             </div>
         </div>
 
+        <!-- 选项卡 -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('pending')">待审核</button>
-            <button class="tab" onclick="switchTab('approved')">已通过</button>
-            <button class="tab" onclick="switchTab('rejected')">已拒绝</button>
-            <button class="tab" onclick="switchTab('whitelist')">白名单管理</button>
-            <button class="tab" onclick="switchTab('add')">手动添加</button>
+            <button class="tab-btn active" onclick="switchTab('applications')">📋 申请列表</button>
+            <button class="tab-btn" onclick="switchTab('whitelist')">✅ 白名单管理</button>
+            <button class="tab-btn" onclick="switchTab('add')">➕ 手动添加</button>
         </div>
 
-        <!-- 待审核面板 -->
-        <div class="panel active" id="panel-pending">
-            <h2>待审核申请</h2>
+        <!-- 申请列表面板 -->
+        <div id="applicationsPanel" class="panel">
+            <h2>申请列表</h2>
+            <div style="margin-bottom: 15px;">
+                <button class="btn btn-primary" onclick="loadApplications('all')">全部</button>
+                <button class="btn" onclick="loadApplications('pending')">待审核</button>
+                <button class="btn" onclick="loadApplications('approved')">已通过</button>
+                <button class="btn" onclick="loadApplications('rejected')">已拒绝</button>
+            </div>
             <table>
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>QQ 号</th>
                         <th>Minecraft ID</th>
-                        <th>账号类型</th>
+                        <th>正版</th>
+                        <th>状态</th>
                         <th>申请时间</th>
                         <th>操作</th>
                     </tr>
                 </thead>
-                <tbody id="pendingTable"></tbody>
+                <tbody id="applicationsTable">
+                </tbody>
             </table>
-            <div id="pendingEmpty" class="empty-state" style="display: none;">暂无待审核申请</div>
-        </div>
-
-        <!-- 已通过面板 -->
-        <div class="panel" id="panel-approved">
-            <h2>已通过申请</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>QQ 号</th>
-                        <th>Minecraft ID</th>
-                        <th>账号类型</th>
-                        <th>审核时间</th>
-                        <th>备注</th>
-                    </tr>
-                </thead>
-                <tbody id="approvedTable"></tbody>
-            </table>
-            <div id="approvedEmpty" class="empty-state" style="display: none;">暂无已通过申请</div>
-        </div>
-
-        <!-- 已拒绝面板 -->
-        <div class="panel" id="panel-rejected">
-            <h2>已拒绝申请</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>QQ 号</th>
-                        <th>Minecraft ID</th>
-                        <th>账号类型</th>
-                        <th>审核时间</th>
-                        <th>备注</th>
-                    </tr>
-                </thead>
-                <tbody id="rejectedTable"></tbody>
-            </table>
-            <div id="rejectedEmpty" class="empty-state" style="display: none;">暂无已拒绝申请</div>
         </div>
 
         <!-- 白名单管理面板 -->
-        <div class="panel" id="panel-whitelist">
-            <h2>白名单成员列表</h2>
+        <div id="whitelistPanel" class="panel hidden">
+            <h2>白名单成员</h2>
+            <button class="btn btn-primary" onclick="loadWhitelist()" style="margin-bottom: 15px;">🔄 刷新列表</button>
             <table>
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Minecraft ID</th>
                         <th>QQ 号</th>
-                        <th>账号类型</th>
-                        <th>添加方式</th>
+                        <th>正版</th>
                         <th>添加时间</th>
                         <th>操作</th>
                     </tr>
                 </thead>
-                <tbody id="whitelistTable"></tbody>
+                <tbody id="whitelistTable">
+                </tbody>
             </table>
-            <div id="whitelistEmpty" class="empty-state" style="display: none;">暂无白名单成员</div>
         </div>
 
         <!-- 手动添加面板 -->
-        <div class="panel" id="panel-add">
+        <div id="addPanel" class="panel hidden">
             <h2>手动添加白名单成员</h2>
-            <form onsubmit="addManual(event)">
+            <div id="addAlert"></div>
+            <form id="addForm">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Minecraft ID *</label>
-                        <input type="text" id="manualMcId" required placeholder="玩家游戏 ID">
+                        <input type="text" id="addMcId" required placeholder="玩家游戏 ID">
                     </div>
                     <div class="form-group">
                         <label>QQ 号</label>
-                        <input type="number" id="manualQq" placeholder="可选">
+                        <input type="text" id="addQq" placeholder="可选">
                     </div>
                 </div>
                 <div class="form-group">
-                    <div class="checkbox-wrapper">
-                        <input type="checkbox" id="manualPremium">
-                        <label for="manualPremium">正版玩家</label>
-                    </div>
+                    <label>
+                        <input type="checkbox" id="addPremium"> 是正版玩家
+                    </label>
                 </div>
-                <button type="submit" class="btn btn-primary">添加至白名单</button>
+                <button type="submit" class="btn btn-success">
+                    ➕ 添加到白名单
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- 备注模态框 -->
-    <div class="modal" id="noteModal">
-        <div class="modal-content">
-            <h3 id="modalTitle">添加备注</h3>
-            <div class="form-group">
-                <label>备注信息</label>
-                <input type="text" id="adminNote" placeholder="可选">
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-success" id="modalConfirm">确认</button>
-                <button class="btn btn-danger" onclick="closeModal()">取消</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="toast" id="toast"></div>
-
     <script>
-        let currentAction = null;
-        let currentId = null;
+        let currentTab = 'applications';
 
-        function showToast(message, type = '') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = `toast ${type} show`;
-            setTimeout(() => toast.classList.remove('show'), 3000);
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('applicationsPanel').classList.add('hidden');
+            document.getElementById('whitelistPanel').classList.add('hidden');
+            document.getElementById('addPanel').classList.add('hidden');
+
+            if (tab === 'applications') {
+                document.getElementById('applicationsPanel').classList.remove('hidden');
+                loadApplications('pending');
+            } else if (tab === 'whitelist') {
+                document.getElementById('whitelistPanel').classList.remove('hidden');
+                loadWhitelist();
+            } else if (tab === 'add') {
+                document.getElementById('addPanel').classList.remove('hidden');
+            }
         }
 
         async function loadStats() {
             try {
                 const response = await fetch('/api/admin/stats');
                 const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('statPending').textContent = data.stats.pending;
-                    document.getElementById('statApproved').textContent = data.stats.approved;
-                    document.getElementById('statRejected').textContent = data.stats.rejected;
-                    document.getElementById('statMembers').textContent = data.stats.totalMembers;
-                }
+                document.getElementById('statTotal').textContent = data.totalApplications || 0;
+                document.getElementById('statPending').textContent = data.pending || 0;
+                document.getElementById('statApproved').textContent = data.approved || 0;
+                document.getElementById('statMembers').textContent = data.whitelistMembers || 0;
             } catch (error) {
-                showToast('加载统计数据失败', 'error');
+                console.error('加载统计数据失败:', error);
             }
         }
 
-        async function loadApplications(status) {
+        async function loadApplications(status = 'all') {
             try {
-                const response = await fetch(`/api/admin/applications?status=${status}`);
+                const url = status === 'all' ? '/api/admin/applications' : `/api/admin/applications?status=${status}`;
+                const response = await fetch(url);
                 const data = await response.json();
-                
-                const tbody = document.getElementById(`${status}Table`);
-                const empty = document.getElementById(`${status}Empty`);
+
+                const tbody = document.getElementById('applicationsTable');
                 tbody.innerHTML = '';
 
-                if (!data.applications || data.applications.length === 0) {
-                    empty.style.display = 'block';
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">暂无数据</td></tr>';
                     return;
                 }
-                empty.style.display = 'none';
 
-                data.applications.forEach(app => {
-                    const row = document.createElement('tr');
-                    const accountType = app.is_premium ? '正版' : '离线';
-                    const time = new Date(app.created_at).toLocaleString('zh-CN');
+                data.forEach(app => {
+                    let badgeClass = 'badge-pending';
+                    if (app.status === 'approved') badgeClass = 'badge-approved';
+                    if (app.status === 'rejected') badgeClass = 'badge-rejected';
 
-                    if (status === 'pending') {
-                        row.innerHTML = `
-                            <td>${app.qq_number}</td>
-                            <td><strong>${app.minecraft_id}</strong></td>
-                            <td>${accountType}</td>
-                            <td>${time}</td>
-                            <td>
-                                <button class="btn btn-success" onclick="showApproveModal(${app.id})">通过</button>
-                                <button class="btn btn-danger" onclick="rejectApplication(${app.id})">拒绝</button>
-                            </td>
+                    let actions = '';
+                    if (app.status === 'pending') {
+                        actions = `
+                            <button class="btn btn-success" onclick="approveApplication(${app.id})">✓ 批准</button>
+                            <button class="btn btn-danger" onclick="rejectApplication(${app.id})">✗ 拒绝</button>
                         `;
                     } else {
-                        row.innerHTML = `
-                            <td>${app.qq_number}</td>
-                            <td><strong>${app.minecraft_id}</strong></td>
-                            <td>${accountType}</td>
-                            <td>${time}</td>
-                            <td>${app.admin_note || '-'}</td>
-                        `;
+                        actions = '<span style="color: #999;">已处理</span>';
                     }
-                    tbody.appendChild(row);
+
+                    const row = `
+                        <tr>
+                            <td>${app.id}</td>
+                            <td>${app.qq_number}</td>
+                            <td>${app.minecraft_id}</td>
+                            <td>${app.is_premium ? '✓' : '-'}</td>
+                            <td><span class="badge ${badgeClass}">${app.status}</span></td>
+                            <td>${new Date(app.created_at).toLocaleString('zh-CN')}</td>
+                            <td>${actions}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
                 });
             } catch (error) {
-                showToast('加载数据失败', 'error');
+                console.error('加载申请列表失败:', error);
+            }
+        }
+
+        async function approveApplication(id) {
+            if (!confirm('确定要批准此申请吗？')) return;
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>';
+
+            try {
+                const response = await fetch(`/api/admin/approve/${id}`, { method: 'POST' });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('已批准并发送邮件通知！');
+                    loadApplications('pending');
+                    loadStats();
+                } else {
+                    alert('批准失败：' + (result.details || result.error));
+                    btn.disabled = false;
+                    btn.textContent = '✓ 批准';
+                }
+            } catch (error) {
+                alert('操作失败：' + error.message);
+                btn.disabled = false;
+                btn.textContent = '✓ 批准';
+            }
+        }
+
+        async function rejectApplication(id) {
+            if (!confirm('确定要拒绝此申请吗？')) return;
+
+            try {
+                const response = await fetch(`/api/admin/reject/${id}`, { method: 'POST' });
+                const result = await response.json();
+
+                if (result.success) {
+                    loadApplications('pending');
+                    loadStats();
+                } else {
+                    alert('拒绝失败');
+                }
+            } catch (error) {
+                alert('操作失败');
             }
         }
 
@@ -517,173 +480,99 @@
             try {
                 const response = await fetch('/api/admin/whitelist');
                 const data = await response.json();
-                
+
                 const tbody = document.getElementById('whitelistTable');
-                const empty = document.getElementById('whitelistEmpty');
                 tbody.innerHTML = '';
 
-                if (!data.localMembers || data.localMembers.length === 0) {
-                    empty.style.display = 'block';
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">暂无数据</td></tr>';
                     return;
                 }
-                empty.style.display = 'none';
 
-                data.localMembers.forEach(member => {
-                    const row = document.createElement('tr');
-                    const accountType = member.is_premium ? '正版' : '离线';
-                    const time = new Date(member.added_at).toLocaleString('zh-CN');
-                    
-                    row.innerHTML = `
-                        <td><strong>${member.minecraft_id}</strong></td>
-                        <td>${member.qq_number || '-'}</td>
-                        <td>${accountType}</td>
-                        <td>${member.added_by === 'manual' ? '手动' : '申请'}</td>
-                        <td>${time}</td>
-                        <td>
-                            <button class="btn btn-danger" onclick="removeMember('${member.minecraft_id}')">移除</button>
-                        </td>
+                data.forEach(member => {
+                    const row = `
+                        <tr>
+                            <td>${member.id}</td>
+                            <td>${member.minecraft_id}</td>
+                            <td>${member.qq_number || '-'}</td>
+                            <td>${member.is_premium ? '✓' : '-'}</td>
+                            <td>${new Date(member.added_at).toLocaleString('zh-CN')}</td>
+                            <td>
+                                <button class="btn btn-danger" onclick="removeFromWhitelist(${member.id})">删除</button>
+                            </td>
+                        </tr>
                     `;
-                    tbody.appendChild(row);
+                    tbody.innerHTML += row;
                 });
             } catch (error) {
-                showToast('加载白名单失败', 'error');
+                console.error('加载白名单失败:', error);
             }
         }
 
-        function switchTab(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById(`panel-${tab}`).classList.add('active');
+        async function removeFromWhitelist(id) {
+            if (!confirm('确定要从白名单中移除此玩家吗？')) return;
 
-            if (tab === 'pending' || tab === 'approved' || tab === 'rejected') {
-                loadApplications(tab);
-            } else if (tab === 'whitelist') {
-                loadWhitelist();
+            try {
+                const response = await fetch(`/api/admin/whitelist/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+
+                if (result.success) {
+                    loadWhitelist();
+                    loadStats();
+                } else {
+                    alert('删除失败');
+                }
+            } catch (error) {
+                alert('操作失败');
             }
         }
 
-        function showApproveModal(id) {
-            currentId = id;
-            currentAction = 'approve';
-            document.getElementById('modalTitle').textContent = '批准申请';
-            document.getElementById('adminNote').value = '';
-            document.getElementById('noteModal').classList.add('show');
-            
-            document.getElementById('modalConfirm').onclick = async () => {
-                const note = document.getElementById('adminNote').value;
-                try {
-                    const response = await fetch(`/api/admin/approve/${id}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ admin_note: note })
-                    });
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        showToast('申请已批准', 'success');
-                        closeModal();
-                        loadApplications('pending');
-                        loadStats();
-                    } else {
-                        showToast(data.message, 'error');
-                    }
-                } catch (error) {
-                    showToast('操作失败', 'error');
-                }
-            };
-        }
-
-        async function rejectApplication(id) {
-            if (!confirm('确定要拒绝此申请吗？')) return;
-            
-            currentId = id;
-            currentAction = 'reject';
-            document.getElementById('modalTitle').textContent = '拒绝申请';
-            document.getElementById('adminNote').value = '';
-            document.getElementById('noteModal').classList.add('show');
-            
-            document.getElementById('modalConfirm').onclick = async () => {
-                const note = document.getElementById('adminNote').value;
-                try {
-                    const response = await fetch(`/api/admin/reject/${id}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ admin_note: note })
-                    });
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        showToast('申请已拒绝', 'success');
-                        closeModal();
-                        loadApplications('pending');
-                        loadStats();
-                    } else {
-                        showToast(data.message, 'error');
-                    }
-                } catch (error) {
-                    showToast('操作失败', 'error');
-                }
-            };
-        }
-
-        function closeModal() {
-            document.getElementById('noteModal').classList.remove('show');
-            currentId = null;
-            currentAction = null;
-        }
-
-        async function addManual(e) {
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const minecraft_id = document.getElementById('manualMcId').value;
-            const qq_number = document.getElementById('manualQq').value;
-            const is_premium = document.getElementById('manualPremium').checked;
+
+            const minecraftId = document.getElementById('addMcId').value;
+            const qqNumber = document.getElementById('addQq').value;
+            const isPremium = document.getElementById('addPremium').checked;
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> 添加中...';
 
             try {
                 const response = await fetch('/api/admin/whitelist', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ minecraft_id, qq_number, is_premium })
+                    body: JSON.stringify({
+                        minecraft_id: minecraftId,
+                        qq_number: qqNumber,
+                        is_premium: isPremium
+                    })
                 });
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast('添加成功', 'success');
-                    e.target.reset();
-                    loadWhitelist();
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('addAlert').innerHTML = `
+                        <div class="alert alert-success">添加成功！</div>
+                    `;
+                    document.getElementById('addForm').reset();
                     loadStats();
                 } else {
-                    showToast(data.message, 'error');
+                    document.getElementById('addAlert').innerHTML = `
+                        <div class="alert alert-error">添加失败：${result.details || result.error}</div>
+                    `;
                 }
             } catch (error) {
-                showToast('添加失败', 'error');
+                document.getElementById('addAlert').innerHTML = `
+                    <div class="alert alert-error">添加失败：${error.message}</div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '➕ 添加到白名单';
             }
-        }
+        });
 
-        async function removeMember(minecraftId) {
-            if (!confirm(`确定要从白名单移除 ${minecraftId} 吗？`)) return;
-            
-            try {
-                const response = await fetch(`/api/admin/whitelist/${encodeURIComponent(minecraftId)}`, {
-                    method: 'DELETE'
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast('已移除', 'success');
-                    loadWhitelist();
-                    loadStats();
-                } else {
-                    showToast(data.message, 'error');
-                }
-            } catch (error) {
-                showToast('操作失败', 'error');
-            }
-        }
-
-        // 初始化加载
+        // 初始化
         loadStats();
         loadApplications('pending');
     </script>
