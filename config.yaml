@@ -1,47 +1,32 @@
-# MCDR 白名单申请系统配置文件
-
-# 服务器配置
 server:
   port: 11451
   host: "0.0.0.0"
 
 # MCDR Whitelist API 配置
 mcdr:
-  # MCDR 服务器地址 (通常是 http://localhost:xxxx 或你的 MCDR Web 控制台地址)
-  url: "http://localhost:23333"
-  # API Token (在 MCDR 配置中获取)
-  token: "your_mcdr_api_token_here"
-  # 目标 Minecraft 服务器名称 (如果在 MCDR 中管理多个服务器)
-  target_server: "server"
+  api_url: "http://localhost:23333"  # MCDR 服务器地址
+  token: "your_mcdr_token_here"      # MCDR API Token
 
-# 邮箱配置 (使用 163 邮箱发送通知)
+# 邮箱配置 (163 邮箱)
 email:
   enabled: true
-  # 163 邮箱账号
-  user: "your_email@163.com"
-  # SMTP 授权码 (不是登录密码，需要在 163 邮箱设置中开启 SMTP 并获取)
-  pass: "your_smtp_auth_code"
-  # SMTP 服务器
   host: "smtp.163.com"
-  # SMTP 端口 (465 或 587)
   port: 465
-  # 发件人名称
+  secure: true
+  user: "your_email@163.com"         # 你的 163 邮箱
+  password: "your_smtp_auth_code"    # SMTP 授权码 (不是登录密码)
   from_name: "Minecraft 白名单系统"
 
 # 数据库配置
 database:
   path: "./whitelist.db"
 
-# QQ 信息 API (可选，用于查询 QQ 信息)
-qq_api:
-  # 是否启用 QQ 信息查询
-  enabled: true
-  # API 端点 (可以使用第三方服务或自建)
-  endpoint: "https://api.q.qq.com/api/s3/face/get?account="
+# 前端配置
+frontend:
+  title: "Minecraft 白名单申请"
+  description: "申请加入服务器白名单"
 
-# 皮肤预览 API
-skin_api:
-  # 皮肤渲染 API 端点
-  render_url: "https://minotar.net/avatar"
-  # 全身渲染 API 端点
-  body_url: "https://minotar.net/body"
+# 后台配置
+admin:
+  title: "白名单管理后台"
+  path: "/admin"

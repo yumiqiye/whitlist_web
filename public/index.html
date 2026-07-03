@@ -24,38 +24,31 @@
         .container {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
             max-width: 500px;
             width: 100%;
-            overflow: hidden;
         }
 
-        .header {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-            color: white;
-            padding: 30px;
+        h1 {
             text-align: center;
-        }
-
-        .header h1 {
-            font-size: 28px;
+            color: #333;
             margin-bottom: 10px;
+            font-size: 28px;
         }
 
-        .header p {
-            opacity: 0.9;
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
             font-size: 14px;
-        }
-
-        .form-container {
-            padding: 30px;
         }
 
         .form-group {
             margin-bottom: 25px;
         }
 
-        .form-group label {
+        label {
             display: block;
             margin-bottom: 8px;
             color: #333;
@@ -63,8 +56,8 @@
             font-size: 14px;
         }
 
-        .form-group input[type="text"],
-        .form-group input[type="number"] {
+        input[type="text"],
+        input[type="number"] {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e0e0e0;
@@ -73,7 +66,7 @@
             transition: border-color 0.3s;
         }
 
-        .form-group input:focus {
+        input:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -82,77 +75,86 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            cursor: pointer;
+            margin-bottom: 25px;
         }
 
-        .checkbox-group input {
+        .checkbox-group input[type="checkbox"] {
             width: 20px;
             height: 20px;
             cursor: pointer;
         }
 
         .checkbox-group label {
+            margin-bottom: 0;
             cursor: pointer;
-            margin: 0;
-            font-weight: 500;
         }
 
-        .btn {
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-check {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-qq {
+            background: linear-gradient(135deg, #12b7f5 0%, #0ea5e9 100%);
+            color: white;
+        }
+
+        .btn-skin {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-check:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-check:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-submit {
             width: 100%;
             padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             border: none;
             border-radius: 10px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            margin-bottom: 10px;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
+        .btn-submit:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-check {
-            background: #f0f0f0;
-            color: #333;
-            margin-top: 10px;
-        }
-
-        .btn-check:hover {
-            background: #e0e0e0;
-        }
-
-        .btn-check:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
         }
 
         .info-card {
             background: #f8f9fa;
             border-radius: 10px;
-            padding: 20px;
+            padding: 15px;
             margin-top: 15px;
             display: none;
         }
 
         .info-card.show {
             display: block;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .qq-info {
@@ -165,7 +167,7 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            border: 3px solid #667eea;
+            border: 3px solid #12b7f5;
         }
 
         .skin-preview {
@@ -173,219 +175,223 @@
         }
 
         .skin-preview img {
-            max-width: 150px;
+            max-width: 100%;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background: #f0f0f0;
         }
 
-        .message {
-            padding: 15px;
-            border-radius: 10px;
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
             margin-bottom: 20px;
             display: none;
         }
 
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #059669;
         }
 
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #dc2626;
         }
 
-        .status-section {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px solid #f0f0f0;
-        }
-
-        .status-section h3 {
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .status-input-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .status-input-group input {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-        }
-
-        .status-list {
-            margin-top: 15px;
-        }
-
-        .status-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .status-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-approved {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-rejected {
-            background: #f8d7da;
-            color: #721c24;
+        .alert.show {
+            display: block;
         }
 
         .loading {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            border: 3px solid rgba(255,255,255,0.3);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎮 白名单申请</h1>
-            <p>填写信息申请加入我们的 Minecraft 服务器</p>
-        </div>
+        <h1>🎮 Minecraft 白名单申请</h1>
+        <p class="subtitle">填写信息申请加入服务器</p>
 
-        <div class="form-container">
-            <div id="message" class="message"></div>
+        <div id="alert" class="alert"></div>
 
-            <form id="applyForm">
-                <div class="form-group">
-                    <label for="qqNumber">QQ 号码</label>
-                    <input type="number" id="qqNumber" required placeholder="请输入您的 QQ 号">
-                    <button type="button" class="btn btn-check" onclick="checkQQ()">🔍 查询 QQ 信息</button>
-                    <div id="qqInfo" class="info-card">
-                        <div class="qq-info">
-                            <img id="qqAvatar" class="qq-avatar" src="" alt="QQ 头像">
-                            <div>
-                                <p><strong>昵称:</strong> <span id="qqNickname">-</span></p>
-                                <p><strong>QQ:</strong> <span id="qqDisplay">-</span></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="minecraftId">Minecraft ID</label>
-                    <input type="text" id="minecraftId" required placeholder="请输入您的游戏 ID">
-                    <button type="button" class="btn btn-check" onclick="checkSkin()">🎨 查看皮肤预览</button>
-                    <div id="skinPreview" class="info-card skin-preview">
-                        <img id="skinImage" src="" alt="皮肤预览">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="checkbox-group" onclick="togglePremium()">
-                        <input type="checkbox" id="isPremium">
-                        <label for="isPremium">我是正版玩家 (Java Edition)</label>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary">📤 提交申请</button>
-            </form>
-
-            <div class="status-section">
-                <h3>📋 查询申请状态</h3>
-                <div class="status-input-group">
-                    <input type="number" id="statusQq" placeholder="输入 QQ 号查询">
-                    <button class="btn btn-check" style="width: auto; margin: 0;" onclick="queryStatus()">查询</button>
-                </div>
-                <div id="statusList" class="status-list"></div>
+        <form id="applyForm">
+            <div class="form-group">
+                <label for="qqNumber">QQ 号码 *</label>
+                <input type="number" id="qqNumber" required placeholder="请输入您的 QQ 号">
             </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-check btn-qq" onclick="checkQQ()">
+                    🔍 查询 QQ 信息
+                </button>
+            </div>
+
+            <div id="qqInfoCard" class="info-card">
+                <div class="qq-info">
+                    <img id="qqAvatar" class="qq-avatar" src="" alt="QQ 头像">
+                    <div>
+                        <p><strong>昵称：</strong><span id="qqNickname">-</span></p>
+                        <p><strong>QQ：</strong><span id="qqNumDisplay">-</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="minecraftId">Minecraft ID *</label>
+                <input type="text" id="minecraftId" required placeholder="请输入您的游戏 ID">
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="isPremium" onchange="toggleSkinButton()">
+                <label for="isPremium">我是正版玩家</label>
+            </div>
+
+            <div class="btn-group hidden" id="skinBtnGroup">
+                <button type="button" class="btn-check btn-skin" onclick="checkSkin()">
+                    🎨 查看皮肤预览
+                </button>
+            </div>
+
+            <div id="skinCard" class="info-card skin-preview">
+                <img id="skinImage" src="" alt="皮肤预览">
+            </div>
+
+            <button type="submit" class="btn-submit">
+                📤 提交申请
+            </button>
+        </form>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+            <p style="text-align: center; color: #666; font-size: 14px;">
+                管理员入口：<a href="/admin" style="color: #667eea; text-decoration: none;">前往后台管理</a>
+            </p>
         </div>
     </div>
 
     <script>
-        function showMessage(text, type) {
-            const msg = document.getElementById('message');
-            msg.textContent = text;
-            msg.className = `message ${type}`;
-            msg.style.display = 'block';
+        let qqChecked = false;
+        let skinChecked = false;
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type} show`;
+            alert.textContent = message;
             setTimeout(() => {
-                msg.style.display = 'none';
+                alert.classList.remove('show');
             }, 5000);
         }
 
         async function checkQQ() {
             const qqNumber = document.getElementById('qqNumber').value;
             if (!qqNumber) {
-                showMessage('请先输入 QQ 号', 'error');
+                showAlert('请先输入 QQ 号', 'error');
                 return;
             }
 
+            const btn = document.querySelector('.btn-qq');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> 查询中...';
+
             try {
-                const response = await fetch(`/api/qq-info/${qqNumber}`);
+                const response = await fetch(`/api/qq-info?qq=${qqNumber}`);
                 const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('qqAvatar').src = data.avatar;
-                    document.getElementById('qqNickname').textContent = data.nickname;
-                    document.getElementById('qqDisplay').textContent = data.qq;
-                    document.getElementById('qqInfo').classList.add('show');
+
+                if (data.face) {
+                    document.getElementById('qqAvatar').src = data.face;
+                    document.getElementById('qqNickname').textContent = data.nickname || '未知';
+                    document.getElementById('qqNumDisplay').textContent = qqNumber;
+                    document.getElementById('qqInfoCard').classList.add('show');
+                    qqChecked = true;
+                    showAlert('QQ 信息查询成功', 'success');
                 } else {
-                    showMessage(data.message, 'error');
+                    showAlert('未查询到 QQ 信息', 'error');
                 }
             } catch (error) {
-                showMessage('查询失败，请稍后重试', 'error');
+                showAlert('查询失败，请重试', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🔍 查询 QQ 信息';
+            }
+        }
+
+        function toggleSkinButton() {
+            const isPremium = document.getElementById('isPremium').checked;
+            const skinBtnGroup = document.getElementById('skinBtnGroup');
+            if (isPremium) {
+                skinBtnGroup.classList.remove('hidden');
+            } else {
+                skinBtnGroup.classList.add('hidden');
+                document.getElementById('skinCard').classList.remove('show');
+                skinChecked = false;
             }
         }
 
         async function checkSkin() {
             const minecraftId = document.getElementById('minecraftId').value;
             if (!minecraftId) {
-                showMessage('请先输入 Minecraft ID', 'error');
+                showAlert('请先输入 Minecraft ID', 'error');
                 return;
             }
 
+            const btn = document.querySelector('.btn-skin');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> 加载中...';
+
             try {
-                const response = await fetch(`/api/skin-preview/${encodeURIComponent(minecraftId)}`);
+                const response = await fetch(`/api/skin-preview?username=${encodeURIComponent(minecraftId)}`);
                 const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('skinImage').src = data.bodyRender;
-                    document.getElementById('skinPreview').classList.add('show');
+
+                if (data.previewUrl) {
+                    document.getElementById('skinImage').src = data.previewUrl;
+                    document.getElementById('skinCard').classList.add('show');
+                    skinChecked = true;
+                    showAlert('皮肤加载成功', 'success');
                 }
             } catch (error) {
-                showMessage('获取皮肤失败，请检查 ID 是否正确', 'error');
+                showAlert('皮肤加载失败，请检查 ID 是否正确', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🎨 查看皮肤预览';
             }
-        }
-
-        function togglePremium() {
-            const checkbox = document.getElementById('isPremium');
-            checkbox.checked = !checkbox.checked;
         }
 
         document.getElementById('applyForm').addEventListener('submit', async (e) => {
@@ -396,14 +402,20 @@
             const isPremium = document.getElementById('isPremium').checked;
 
             if (!qqNumber || !minecraftId) {
-                showMessage('请填写完整信息', 'error');
+                showAlert('请填写完整信息', 'error');
                 return;
             }
+
+            const btn = document.querySelector('.btn-submit');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> 提交中...';
 
             try {
                 const response = await fetch('/api/apply', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
                         qq_number: qqNumber,
                         minecraft_id: minecraftId,
@@ -411,62 +423,26 @@
                     })
                 });
 
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage(data.message, 'success');
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('申请已提交！请等待管理员审核，结果将发送到您的 QQ 邮箱', 'success');
                     document.getElementById('applyForm').reset();
-                    document.getElementById('qqInfo').classList.remove('show');
-                    document.getElementById('skinPreview').classList.remove('show');
+                    document.getElementById('qqInfoCard').classList.remove('show');
+                    document.getElementById('skinCard').classList.remove('show');
+                    document.getElementById('skinBtnGroup').classList.add('hidden');
+                    qqChecked = false;
+                    skinChecked = false;
                 } else {
-                    showMessage(data.message, 'error');
+                    showAlert(result.error || '提交失败', 'error');
                 }
             } catch (error) {
-                showMessage('提交失败，请稍后重试', 'error');
+                showAlert('提交失败，请重试', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '📤 提交申请';
             }
         });
-
-        async function queryStatus() {
-            const qqNumber = document.getElementById('statusQq').value;
-            if (!qqNumber) {
-                showMessage('请输入 QQ 号', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch(`/api/application/status/${qqNumber}`);
-                const data = await response.json();
-                
-                const statusList = document.getElementById('statusList');
-                statusList.innerHTML = '';
-
-                if (data.applications.length === 0) {
-                    statusList.innerHTML = '<p style="color: #666; text-align: center;">暂无申请记录</p>';
-                    return;
-                }
-
-                data.applications.forEach(app => {
-                    const statusText = {
-                        'pending': '待审核',
-                        'approved': '已通过',
-                        'rejected': '已拒绝'
-                    };
-
-                    const item = document.createElement('div');
-                    item.className = 'status-item';
-                    item.innerHTML = `
-                        <div>
-                            <strong>${app.minecraft_id}</strong>
-                            <p style="font-size: 12px; color: #666;">${new Date(app.created_at).toLocaleString()}</p>
-                        </div>
-                        <span class="status-badge status-${app.status}">${statusText[app.status]}</span>
-                    `;
-                    statusList.appendChild(item);
-                });
-            } catch (error) {
-                showMessage('查询失败', 'error');
-            }
-        }
     </script>
 </body>
 </html>

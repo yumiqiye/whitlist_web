@@ -1,175 +1,367 @@
 const express = require('express');
-const Database = require('better-sqlite3');
-const axios = require('axios');
+const sqlite3 = require('sqlite3').verbose();
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 
-// 加载配置
+// 加载配置文件
 const configPath = path.join(__dirname, 'config.yaml');
-let config;
-try {
-    const configContent = fs.readFileSync(configPath, 'utf8');
-    config = yaml.load(configContent);
-} catch (err) {
-    console.error('无法加载配置文件:', err.message);
-    process.exit(1);
-}
-
-// 初始化数据库
-const dbPath = path.resolve(__dirname, config.database.path || './whitelist.db');
-const db = new Database(dbPath);
-
-// 创建数据表
-db.exec(`
-    CREATE TABLE IF NOT EXISTS applications (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        qq_number TEXT NOT NULL,
-        minecraft_id TEXT NOT NULL,
-        is_premium INTEGER DEFAULT 0,
-        status TEXT DEFAULT 'pending',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        uuid TEXT,
-        admin_note TEXT
-    )
-`);
-
-db.exec(`
-    CREATE TABLE IF NOT EXISTS whitelist_members (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        minecraft_id TEXT NOT NULL UNIQUE,
-        uuid TEXT,
-        qq_number TEXT,
-        is_premium INTEGER DEFAULT 0,
-        added_by TEXT DEFAULT 'manual',
-        added_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-`);
+const config = yaml.load(fs.readFileSync(configPath, 'utf8'));
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+const PORT = config.server.port;
+const HOST = config.server.host;
 
-// 后台管理页面路由 (必须在静态文件之前)
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin', 'index.html'));
-});
+// 中间件
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // 静态文件服务 - 前台
 app.use(express.static(path.join(__dirname, 'public')));
 
-// MCDR API 客户端
-const mcdrClient = axios.create({
-    baseURL: config.mcdr.url,
-    headers: {
-        'Authorization': `Bearer ${config.mcdr.token}`,
-        'Content-Type': 'application/json'
-    },
-    timeout: 10000
+// 静态文件服务 - 后台 (/admin)
+app.use('/admin', express.static(path.join(__dirname, 'admin')));
+
+// 初始化数据库
+const dbPath = config.database.path || './whitelist.db';
+const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+        console.error('数据库连接失败:', err.message);
+    } else {
+        console.log('已连接到 SQLite 数据库');
+        initDatabase();
+    }
 });
 
-// 邮箱传输器
-let transporter = null;
-if (config.email.enabled) {
-    transporter = nodemailer.createTransport({
-        host: config.email.host,
-        port: config.email.port,
-        secure: true,
-        auth: {
-            user: config.email.user,
-            pass: config.email.pass
+function initDatabase() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS applications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            qq_number TEXT NOT NULL,
+            minecraft_id TEXT NOT NULL,
+            is_premium BOOLEAN DEFAULT FALSE,
+            status TEXT DEFAULT 'pending',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `, (err) => {
+        if (err) {
+            console.error('创建表失败:', err.message);
+        } else {
+            console.log('数据库表初始化完成');
+        }
+    });
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS whitelist_members (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            minecraft_id TEXT NOT NULL UNIQUE,
+            qq_number TEXT,
+            is_premium BOOLEAN DEFAULT FALSE,
+            added_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `, (err) => {
+        if (err) {
+            console.error('创建白名单表失败:', err.message);
+        } else {
+            console.log('白名单表初始化完成');
         }
     });
 }
 
+// MCDR Whitelist API 类 (对应 Python 示例)
+class WhitelistAPI {
+    constructor(apiUrl, token) {
+        this.apiUrl = apiUrl;
+        this.token = token;
+    }
+
+    async getWhitelist() {
+        try {
+            const response = await axios.get(`${this.apiUrl}/api/whitelist`, {
+                headers: { 'Authorization': `Bearer ${this.token}` }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('获取白名单失败:', error.message);
+            return [];
+        }
+    }
+
+    async getWhitelistUUIDs() {
+        try {
+            const response = await axios.get(`${this.apiUrl}/api/whitelist/uuids`, {
+                headers: { 'Authorization': `Bearer ${this.token}` }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('获取 UUID 列表失败:', error.message);
+            return [];
+        }
+    }
+
+    async getWhitelistNames() {
+        try {
+            const response = await axios.get(`${this.apiUrl}/api/whitelist/names`, {
+                headers: { 'Authorization': `Bearer ${this.token}` }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('获取玩家名列表失败:', error.message);
+            return [];
+        }
+    }
+
+    async addPlayer(name) {
+        try {
+            const response = await axios.post(`${this.apiUrl}/api/whitelist/add`, 
+                { player: name },
+                { headers: { 'Authorization': `Bearer ${this.token}` } }
+            );
+            console.log(`已添加玩家 ${name} 到白名单`);
+            return response.data;
+        } catch (error) {
+            console.error(`添加玩家 ${name} 失败:`, error.message);
+            throw error;
+        }
+    }
+
+    async addOfflinePlayer(name) {
+        try {
+            const response = await axios.post(`${this.apiUrl}/api/whitelist/add_offline`, 
+                { player: name },
+                { headers: { 'Authorization': `Bearer ${this.token}` } }
+            );
+            console.log(`已添加离线玩家 ${name} 到白名单`);
+            return response.data;
+        } catch (error) {
+            console.error(`添加离线玩家 ${name} 失败:`, error.message);
+            throw error;
+        }
+    }
+
+    async addOnlinePlayer(name) {
+        try {
+            const response = await axios.post(`${this.apiUrl}/api/whitelist/add_online`, 
+                { player: name },
+                { headers: { 'Authorization': `Bearer ${this.token}` } }
+            );
+            console.log(`已添加正版玩家 ${name} 到白名单`);
+            return response.data;
+        } catch (error) {
+            console.error(`添加正版玩家 ${name} 失败:`, error.message);
+            throw error;
+        }
+    }
+
+    async removePlayer(name) {
+        try {
+            const response = await axios.post(`${this.apiUrl}/api/whitelist/remove`, 
+                { player: name },
+                { headers: { 'Authorization': `Bearer ${this.token}` } }
+            );
+            console.log(`已从白名单移除玩家 ${name}`);
+            return response.data;
+        } catch (error) {
+            console.error(`移除玩家 ${name} 失败:`, error.message);
+            throw error;
+        }
+    }
+
+    async enableWhitelist() {
+        try {
+            const response = await axios.post(`${this.apiUrl}/api/whitelist/enable`, {},
+                { headers: { 'Authorization': `Bearer ${this.token}` } }
+            );
+            console.log('已开启服务器白名单功能');
+            return response.data;
+        } catch (error) {
+            console.error('开启白名单失败:', error.message);
+            throw error;
+        }
+    }
+
+    async disableWhitelist() {
+        try {
+            const response = await axios.post(`${this.apiUrl}/api/whitelist/disable`, {},
+                { headers: { 'Authorization': `Bearer ${this.token}` } }
+            );
+            console.log('已关闭服务器白名单功能');
+            return response.data;
+        } catch (error) {
+            console.error('关闭白名单失败:', error.message);
+            throw error;
+        }
+    }
+
+    async addFloodgatePlayer(name, prefix = '') {
+        try {
+            const playerName = prefix + name;
+            const response = await axios.post(`${this.apiUrl}/api/whitelist/add_floodgate`, 
+                { player: playerName, prefix: prefix || undefined },
+                { headers: { 'Authorization': `Bearer ${this.token}` } }
+            );
+            console.log(`已添加 Floodgate 玩家 ${playerName} 到白名单`);
+            return response.data;
+        } catch (error) {
+            console.error(`添加 Floodgate 玩家 ${name} 失败:`, error.message);
+            throw error;
+        }
+    }
+}
+
+// 初始化 MCDR API
+const mcdrConfig = config.mcdr || {};
+const whitelistApi = new WhitelistAPI(mcdrConfig.api_url, mcdrConfig.token);
+
+// 邮箱配置
+const emailConfig = config.email || {};
+let transporter = null;
+
+if (emailConfig.enabled && emailConfig.user && emailConfig.password) {
+    transporter = nodemailer.createTransport({
+        host: emailConfig.host,
+        port: emailConfig.port,
+        secure: emailConfig.secure,
+        auth: {
+            user: emailConfig.user,
+            pass: emailConfig.password
+        }
+    });
+    console.log('邮件服务已配置');
+} else {
+    console.log('邮件服务未配置或禁用');
+}
+
+// 发送通知邮件
+async function sendApprovalEmail(qqNumber, minecraftId) {
+    if (!transporter) {
+        console.log('邮件服务未配置，跳过发送邮件');
+        return false;
+    }
+
+    const qqEmail = `${qqNumber}@qq.com`;
+    const mailOptions = {
+        from: `"${emailConfig.from_name || 'Minecraft 白名单系统'}" <${emailConfig.user}>`,
+        to: qqEmail,
+        subject: '✅ 白名单申请已通过',
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #4CAF50;">🎉 恭喜！您的白名单申请已通过</h2>
+                <p>亲爱的玩家：</p>
+                <p>您的 Minecraft 白名单申请已成功通过审核！</p>
+                <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                    <p><strong>QQ 号码：</strong> ${qqNumber}</p>
+                    <p><strong>Minecraft ID：</strong> ${minecraftId}</p>
+                    <p><strong>审核时间：</strong> ${new Date().toLocaleString('zh-CN')}</p>
+                </div>
+                <p>现在您可以使用以上账号加入服务器了！</p>
+                <p>祝您游戏愉快！</p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                <p style="color: #999; font-size: 12px;">此邮件由系统自动发送，请勿回复。</p>
+            </div>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`邮件已发送至：${qqEmail}`);
+        return true;
+    } catch (error) {
+        console.error('邮件发送失败:', error.message);
+        return false;
+    }
+}
+
 // ==================== API 路由 ====================
 
-// 获取 QQ 信息 (模拟，实际可接入第三方 API)
-app.get('/api/qq-info/:qqNumber', async (req, res) => {
-    const { qqNumber } = req.params;
-    
-    // 这里使用一个公开的 QQ 头像 API 来获取基本信息
-    // 实际项目中可以替换为更完善的 API
+// 查询 QQ 信息 (模拟，实际需要接入 QQ API)
+app.get('/api/qq-info', async (req, res) => {
+    const { qq } = req.query;
+    if (!qq) {
+        return res.status(400).json({ error: '缺少 QQ 号' });
+    }
+
+    // 注意：这里需要接入真实的 QQ 信息查询 API
+    // 以下为模拟数据
     try {
-        // 返回模拟数据或使用公开 API
-        const avatarUrl = `https://q.qlogo.cn/headimg_dl?dst_uin=${qqNumber}&spec=640`;
-        
-        // 尝试获取昵称 (需要第三方服务，这里返回基础信息)
-        res.json({
-            success: true,
-            qq: qqNumber,
-            avatar: avatarUrl,
-            nickname: `QQ用户${qqNumber.slice(-4)}`,
-            message: 'QQ 信息查询成功'
-        });
+        // 实际使用时请替换为真实的 QQ 信息查询 API
+        const mockData = {
+            uin: qq,
+            nickname: `用户${qq.slice(-4)}`,
+            face: `https://q.qlogo.cn/headimg_dl?dst_uin=${qq}&spec=640`,
+            gender: 'unknown',
+            age: 0
+        };
+        res.json(mockData);
     } catch (error) {
-        res.json({
-            success: false,
-            message: '查询失败，请检查 QQ 号是否正确'
-        });
+        res.status(500).json({ error: '查询失败' });
     }
 });
 
-// 获取 MC 皮肤预览 URL
-app.get('/api/skin-preview/:minecraftId', (req, res) => {
-    const { minecraftId } = req.params;
-    const renderUrl = `${config.skin_api.render_url}/${encodeURIComponent(minecraftId)}/64`;
-    const bodyUrl = `${config.skin_api.body_url}/${encodeURIComponent(minecraftId)}/200`;
-    
-    res.json({
-        success: true,
-        headRender: renderUrl,
-        bodyRender: bodyUrl,
-        skinUrl: `https://minotar.net/skin/${encodeURIComponent(minecraftId)}`
+// 查询 MC 皮肤预览 URL
+app.get('/api/skin-preview', (req, res) => {
+    const { username } = req.query;
+    if (!username) {
+        return res.status(400).json({ error: '缺少用户名' });
+    }
+
+    // 使用 Crafatar 提供的皮肤预览服务
+    const skinUrl = `https://crafatar.com/renders/body/${username}?overlay`;
+    res.json({ 
+        username,
+        previewUrl: skinUrl,
+        headUrl: `https://crafatar.com/avatars/${username}?overlay&size=128`,
+        skinUrl: `https://crafatar.com/skins/${username}?overlay`
     });
 });
 
 // 提交白名单申请
 app.post('/api/apply', (req, res) => {
     const { qq_number, minecraft_id, is_premium } = req.body;
-    
+
     if (!qq_number || !minecraft_id) {
-        return res.status(400).json({ success: false, message: '请填写完整信息' });
+        return res.status(400).json({ error: '请填写完整信息' });
     }
+
+    const stmt = db.prepare(
+        'INSERT INTO applications (qq_number, minecraft_id, is_premium, status) VALUES (?, ?, ?, ?)'
+    );
     
-    // 检查是否已存在待审核的申请
-    const existing = db.prepare('SELECT * FROM applications WHERE minecraft_id = ? AND status = ?').get(minecraft_id, 'pending');
-    if (existing) {
-        return res.status(400).json({ success: false, message: '该 Minecraft ID 已有待审核的申请' });
-    }
-    
-    // 检查是否已在白名单中
-    const inWhitelist = db.prepare('SELECT * FROM whitelist_members WHERE minecraft_id = ?').get(minecraft_id);
-    if (inWhitelist) {
-        return res.status(400).json({ success: false, message: '该玩家已在白名单中' });
-    }
-    
-    const stmt = db.prepare(`
-        INSERT INTO applications (qq_number, minecraft_id, is_premium, status)
-        VALUES (?, ?, ?, 'pending')
-    `);
-    
-    const result = stmt.run(qq_number, minecraft_id, is_premium ? 1 : 0);
-    
-    res.json({
-        success: true,
-        message: '申请提交成功，请等待管理员审核',
-        application_id: result.lastInsertRowid
+    stmt.run(qq_number, minecraft_id, is_premium ? 1 : 0, 'pending', function(err) {
+        if (err) {
+            return res.status(500).json({ error: '提交失败', details: err.message });
+        }
+        res.json({ success: true, id: this.lastID, message: '申请已提交，等待审核' });
     });
+    stmt.finalize();
 });
 
 // 查询申请状态
-app.get('/api/application/status/:qqNumber', (req, res) => {
-    const { qqNumber } = req.params;
-    const applications = db.prepare('SELECT * FROM applications WHERE qq_number = ? ORDER BY created_at DESC').all(qqNumber);
-    
-    res.json({
-        success: true,
-        applications: applications
-    });
+app.get('/api/application-status', (req, res) => {
+    const { qq } = req.query;
+    if (!qq) {
+        return res.status(400).json({ error: '缺少 QQ 号' });
+    }
+
+    db.get(
+        'SELECT * FROM applications WHERE qq_number = ? ORDER BY created_at DESC LIMIT 1',
+        [qq],
+        (err, row) => {
+            if (err) {
+                return res.status(500).json({ error: '查询失败' });
+            }
+            if (!row) {
+                return res.json({ found: false });
+            }
+            res.json({ found: true, application: row });
+        }
+    );
 });
 
 // ==================== 后台管理 API ====================
@@ -177,235 +369,190 @@ app.get('/api/application/status/:qqNumber', (req, res) => {
 // 获取所有申请
 app.get('/api/admin/applications', (req, res) => {
     const { status } = req.query;
-    let query = 'SELECT * FROM applications';
+    let sql = 'SELECT * FROM applications ORDER BY created_at DESC';
     let params = [];
-    
-    if (status) {
-        query += ' WHERE status = ?';
-        params.push(status);
-    }
-    query += ' ORDER BY created_at DESC';
-    
-    const applications = db.prepare(query).all(...params);
-    res.json({ success: true, applications });
-});
 
-// 获取白名单成员列表
-app.get('/api/admin/whitelist', async (req, res) => {
-    try {
-        // 从数据库获取
-        const localMembers = db.prepare('SELECT * FROM whitelist_members ORDER BY added_at DESC').all();
-        
-        // 尝试从 MCDR 获取实时白名单
-        let mcdrMembers = [];
-        try {
-            const response = await mcdrClient.get('/api/whitelist');
-            if (response.data && response.data.data) {
-                mcdrMembers = response.data.data.names || [];
-            }
-        } catch (e) {
-            console.log('MCDR API 调用失败，仅显示本地数据');
-        }
-        
-        res.json({
-            success: true,
-            localMembers,
-            mcdrNames: mcdrMembers
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+    if (status) {
+        sql = 'SELECT * FROM applications WHERE status = ? ORDER BY created_at DESC';
+        params = [status];
     }
+
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: '查询失败' });
+        }
+        res.json(rows);
+    });
 });
 
 // 批准申请
 app.post('/api/admin/approve/:id', async (req, res) => {
     const { id } = req.params;
-    const { admin_note } = req.body;
-    
-    const application = db.prepare('SELECT * FROM applications WHERE id = ?').get(id);
-    if (!application) {
-        return res.status(404).json({ success: false, message: '申请不存在' });
-    }
-    
-    if (application.status !== 'pending') {
-        return res.status(400).json({ success: false, message: '该申请已处理过' });
-    }
-    
-    try {
-        // 调用 MCDR API 添加白名单
-        let apiSuccess = false;
-        let apiMessage = '';
-        
+
+    db.get('SELECT * FROM applications WHERE id = ?', [id], async (err, app) => {
+        if (err || !app) {
+            return res.status(404).json({ error: '申请不存在' });
+        }
+
         try {
-            if (application.is_premium) {
-                // 正版玩家
-                await mcdrClient.post('/api/whitelist/add_online', {
-                    player: application.minecraft_id
-                });
+            // 调用 MCDR API 添加到白名单
+            if (app.is_premium) {
+                await whitelistApi.addOnlinePlayer(app.minecraft_id);
             } else {
-                // 离线玩家
-                await mcdrClient.post('/api/whitelist/add_offline', {
-                    player: application.minecraft_id
-                });
+                await whitelistApi.addPlayer(app.minecraft_id);
             }
-            apiSuccess = true;
-            apiMessage = 'MCDR API 调用成功';
-        } catch (mcdrError) {
-            console.error('MCDR API 错误:', mcdrError.response?.data || mcdrError.message);
-            apiMessage = `MCDR API 调用失败：${mcdrError.message}`;
-            // 即使 API 失败也继续，因为可能是测试环境
+
+            // 添加到本地白名单表
+            db.run(
+                'INSERT OR REPLACE INTO whitelist_members (minecraft_id, qq_number, is_premium) VALUES (?, ?, ?)',
+                [app.minecraft_id, app.qq_number, app.is_premium]
+            );
+
+            // 更新申请状态
+            db.run(
+                'UPDATE applications SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                ['approved', id]
+            );
+
+            // 发送邮件通知
+            await sendApprovalEmail(app.qq_number, app.minecraft_id);
+
+            res.json({ success: true, message: '已批准并添加到白名单' });
+        } catch (error) {
+            res.status(500).json({ error: '批准失败', details: error.message });
         }
-        
-        // 更新申请状态
-        db.prepare(`
-            UPDATE applications 
-            SET status = 'approved', admin_note = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        `).run(admin_note || '已通过', id);
-        
-        // 添加到本地白名单记录
-        db.prepare(`
-            INSERT OR REPLACE INTO whitelist_members (minecraft_id, qq_number, is_premium, added_by)
-            VALUES (?, ?, ?, 'application')
-        `).run(application.minecraft_id, application.qq_number, application.is_premium);
-        
-        // 发送邮件通知
-        if (transporter && config.email.enabled) {
-            try {
-                const qqEmail = `${application.qq_number}@qq.com`;
-                await transporter.sendMail({
-                    from: `"${config.email.from_name}" <${config.email.user}>`,
-                    to: qqEmail,
-                    subject: 'Minecraft 白名单申请通过通知',
-                    html: `
-                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                            <h2 style="color: #4CAF50;">🎉 白名单申请通过!</h2>
-                            <p>亲爱的玩家:</p>
-                            <p>您的 Minecraft 白名单申请已通过审核!</p>
-                            <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                                <p><strong>Minecraft ID:</strong> ${application.minecraft_id}</p>
-                                <p><strong>账号类型:</strong> ${application.is_premium ? '正版账号' : '离线账号'}</p>
-                                <p><strong>审核时间:</strong> ${new Date().toLocaleString('zh-CN')}</p>
-                            </div>
-                            <p>现在您可以进入服务器游玩了!</p>
-                            <p style="color: #666; font-size: 12px;">如果这不是您申请的，请忽略此邮件。</p>
-                        </div>
-                    `
-                });
-            } catch (emailError) {
-                console.error('邮件发送失败:', emailError.message);
-            }
-        }
-        
-        res.json({
-            success: true,
-            message: '申请已批准',
-            mcdrStatus: apiSuccess ? 'success' : 'warning',
-            mcdrMessage: apiMessage
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    });
 });
 
 // 拒绝申请
 app.post('/api/admin/reject/:id', (req, res) => {
     const { id } = req.params;
-    const { admin_note } = req.body;
-    
-    const application = db.prepare('SELECT * FROM applications WHERE id = ?').get(id);
-    if (!application) {
-        return res.status(404).json({ success: false, message: '申请不存在' });
-    }
-    
-    db.prepare(`
-        UPDATE applications 
-        SET status = 'rejected', admin_note = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-    `).run(admin_note || '已拒绝', id);
-    
-    res.json({ success: true, message: '申请已拒绝' });
+
+    db.run(
+        'UPDATE applications SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        ['rejected', id],
+        function(err) {
+            if (err) {
+                return res.status(500).json({ error: '拒绝失败' });
+            }
+            res.json({ success: true, message: '已拒绝申请' });
+        }
+    );
 });
 
 // 手动添加白名单成员
 app.post('/api/admin/whitelist', async (req, res) => {
     const { minecraft_id, qq_number, is_premium } = req.body;
-    
+
     if (!minecraft_id) {
-        return res.status(400).json({ success: false, message: '请填写 Minecraft ID' });
+        return res.status(400).json({ error: '缺少 Minecraft ID' });
     }
-    
+
     try {
         // 调用 MCDR API
-        try {
-            if (is_premium) {
-                await mcdrClient.post('/api/whitelist/add_online', { player: minecraft_id });
-            } else {
-                await mcdrClient.post('/api/whitelist/add_offline', { player: minecraft_id });
-            }
-        } catch (mcdrError) {
-            console.error('MCDR API 错误:', mcdrError.message);
+        if (is_premium) {
+            await whitelistApi.addOnlinePlayer(minecraft_id);
+        } else {
+            await whitelistApi.addPlayer(minecraft_id);
         }
-        
+
         // 添加到本地数据库
-        db.prepare(`
-            INSERT OR REPLACE INTO whitelist_members (minecraft_id, qq_number, is_premium, added_by)
-            VALUES (?, ?, ?, 'manual')
-        `).run(minecraft_id, qq_number || null, is_premium ? 1 : 0);
-        
-        res.json({ success: true, message: '玩家已添加到白名单' });
+        db.run(
+            'INSERT OR REPLACE INTO whitelist_members (minecraft_id, qq_number, is_premium) VALUES (?, ?, ?)',
+            [minecraft_id, qq_number || '', is_premium ? 1 : 0],
+            function(err) {
+                if (err) {
+                    return res.status(500).json({ error: '添加失败', details: err.message });
+                }
+                res.json({ success: true, message: '已添加到白名单' });
+            }
+        );
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ error: '添加失败', details: error.message });
     }
 });
 
-// 删除白名单成员
-app.delete('/api/admin/whitelist/:minecraftId', async (req, res) => {
-    const { minecraftId } = req.params;
-    
-    try {
-        // 调用 MCDR API 移除
-        try {
-            await mcdrClient.post('/api/whitelist/remove', { player: minecraftId });
-        } catch (mcdrError) {
-            console.error('MCDR API 错误:', mcdrError.message);
+// 获取白名单成员列表
+app.get('/api/admin/whitelist', (req, res) => {
+    db.all('SELECT * FROM whitelist_members ORDER BY added_at DESC', [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: '查询失败' });
         }
-        
-        // 从本地数据库删除
-        db.prepare('DELETE FROM whitelist_members WHERE minecraft_id = ?').run(minecraftId);
-        
-        res.json({ success: true, message: '玩家已从白名单移除' });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+        res.json(rows);
+    });
 });
 
-// 获取统计数据
-app.get('/api/admin/stats', (req, res) => {
-    const pending = db.prepare("SELECT COUNT(*) as count FROM applications WHERE status = 'pending'").get().count;
-    const approved = db.prepare("SELECT COUNT(*) as count FROM applications WHERE status = 'approved'").get().count;
-    const rejected = db.prepare("SELECT COUNT(*) as count FROM applications WHERE status = 'rejected'").get().count;
-    const totalMembers = db.prepare('SELECT COUNT(*) as count FROM whitelist_members').get().count;
-    
-    res.json({
-        success: true,
-        stats: {
-            pending,
-            approved,
-            rejected,
-            totalMembers
+// 从白名单移除
+app.delete('/api/admin/whitelist/:id', async (req, res) => {
+    const { id } = req.params;
+
+    db.get('SELECT * FROM whitelist_members WHERE id = ?', [id], async (err, member) => {
+        if (err || !member) {
+            return res.status(404).json({ error: '成员不存在' });
+        }
+
+        try {
+            await whitelistApi.removePlayer(member.minecraft_id);
+            
+            db.run('DELETE FROM whitelist_members WHERE id = ?', [id], function(err) {
+                if (err) {
+                    return res.status(500).json({ error: '删除失败' });
+                }
+                res.json({ success: true, message: '已从白名单移除' });
+            });
+        } catch (error) {
+            res.status(500).json({ error: '移除失败', details: error.message });
         }
     });
 });
 
-// 启动服务器
-const PORT = config.server.port || 11451;
-const HOST = config.server.host || '0.0.0.0';
+// 获取统计数据
+app.get('/api/admin/stats', (req, res) => {
+    const stats = {};
+    
+    db.get('SELECT COUNT(*) as total FROM applications', [], (err, row) => {
+        stats.totalApplications = row ? row.total : 0;
+        
+        db.get('SELECT COUNT(*) as pending FROM applications WHERE status = ?', ['pending'], (err, row) => {
+            stats.pending = row ? row.total : 0;
+            
+            db.get('SELECT COUNT(*) as approved FROM applications WHERE status = ?', ['approved'], (err, row) => {
+                stats.approved = row ? row.total : 0;
+                
+                db.get('SELECT COUNT(*) as rejected FROM applications WHERE status = ?', ['rejected'], (err, row) => {
+                    stats.rejected = row ? row.total : 0;
+                    
+                    db.get('SELECT COUNT(*) as members FROM whitelist_members', [], (err, row) => {
+                        stats.whitelistMembers = row ? row.total : 0;
+                        res.json(stats);
+                    });
+                });
+            });
+        });
+    });
+});
 
+// 启动服务器
 app.listen(PORT, HOST, () => {
-    console.log(`\n🚀 Minecraft 白名单系统已启动`);
-    console.log(`   前台地址：http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}`);
-    console.log(`   后台地址：http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}/admin`);
-    console.log(`   配置文件：${configPath}`);
-    console.log(`   数据库：${dbPath}\n`);
+    console.log('========================================');
+    console.log(`🚀 服务器已启动`);
+    console.log(`📍 地址：http://${HOST}:${PORT}`);
+    console.log(`🏠 前台页面：http://${HOST}:${PORT}`);
+    console.log(`🔧 后台管理：http://${HOST}:${PORT}/admin`);
+    console.log('========================================');
+    console.log('\n⚙️  配置文件：config.yaml');
+    console.log('💾 数据库文件：', dbPath);
+    console.log('========================================');
+});
+
+// 优雅关闭
+process.on('SIGINT', () => {
+    console.log('\n正在关闭服务器...');
+    db.close((err) => {
+        if (err) {
+            console.error('关闭数据库失败:', err.message);
+        }
+        console.log('数据库连接已关闭');
+        process.exit(0);
+    });
 });
